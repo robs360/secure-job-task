@@ -1,19 +1,37 @@
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Card from "./Card";
 import Section from "./Section";
+import axios from "axios";
 
 const Dashboard = ({
   products,
   users,
   orders,
   addOrder,
-  filteredOrders,
   userById,
   productById,
   updateOrderStatus,
-  ORDER_STATUSES,
 }) => {
+ 
+  const [filteredOrders,setFilterOrders]=useState([])
+  const [loading, setLoading] = useState(true);
+     useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const res = await axios.get("http://localhost:5000/api/products/orders");
+        setFilterOrders(res.data); 
+      } catch (err) {
+        
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProducts();
+  }, []);
+  const ORDER_STATUSES=["Pending", "Shipped", "Delivered", "Cancelled"]
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -32,46 +50,41 @@ const Dashboard = ({
           </button>
         }
       >
-        <table className="w-full table-auto border-collapse border border-gray-300">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="border px-2 py-1">#</th>
-              <th className="border px-2 py-1">User</th>
-              <th className="border px-2 py-1">Product</th>
-              <th className="border px-2 py-1">Qty</th>
-              <th className="border px-2 py-1">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredOrders.map((o, i) => (
-              <tr key={o.id}>
-                <td className="border px-2 py-1">{i + 1}</td>
-                <td className="border px-2 py-1">
-                  {userById(o.userId)?.name || "-"}
-                </td>
-                <td className="border px-2 py-1">
-                  {productById(o.productId)?.name || "-"}
-                </td>
-                <td className="border px-2 py-1">{o.qty}</td>
-                <td className="border px-2 py-1">
-                  <select
-                    className="border px-1 py-0.5"
-                    value={o.status}
-                    onChange={(e) =>
-                      updateOrderStatus(o.id, e.target.value)
-                    }
-                  >
-                    {ORDER_STATUSES.map((s) => (
-                      <option key={s} value={s}>
-                        {s}
-                      </option>
-                    ))}
-                  </select>
-                </td>
-              </tr>
+     <table className="w-full table-auto border-collapse border border-gray-300">
+  <thead className="bg-gray-50">
+    <tr>
+      <th className="border px-2 py-1">User Name</th>
+      <th className="border px-2 py-1">Email</th>
+      <th className="border px-2 py-1">Product</th>
+      <th className="border px-2 py-1">Qty</th>
+      <th className="border px-2 py-1">Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    {filteredOrders.map((o) => (
+      <tr key={o._id}>
+        <td className="border px-2 py-1">{o.name}</td>
+        <td className="border px-2 py-1">{o.email}</td>
+        <td className="border px-2 py-1">{o.product}</td>
+        <td className="border px-2 py-1">{o.qty}</td>
+        <td className="border px-2 py-1">
+          <select
+            className="border px-1 py-0.5"
+            value={o.status}
+            onChange={(e) => updateOrderStatus(o._id, e.target.value)}
+          >
+            {ORDER_STATUSES.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
             ))}
-          </tbody>
-        </table>
+          </select>
+        </td>
+      </tr>
+    ))}
+  </tbody>
+</table>
+
       </Section>
     </>
   );

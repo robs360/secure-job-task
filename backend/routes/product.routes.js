@@ -4,8 +4,9 @@ const multer = require("multer");
 const path = require("path");
 const Product = require("../models/product.model");
 const User = require("../models/user.model");
+const Order = require("../models/order.model");
 const fs = require("fs"); // Import fs for file system operations
-
+const jwt = require("jsonwebtoken");
 // Multer config
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -34,6 +35,44 @@ router.get("/", async (req, res) => {
 // @route   GET api/products/:id
 // @desc    Get single product by ID
 // @access  Public
+
+router.put("/:id/status", async (req, res) => {
+  const { status } = req.body;
+
+  // Validate status
+  const validStatuses = ["Pending", "Shipped", "Delivered", "Cancelled"];
+  if (!validStatuses.includes(status)) {
+    return res.status(400).json({ msg: "Invalid status" });
+  }
+
+  try {
+    const order = await Order.findById(req.params.id);
+    if (!order) {
+      return res.status(404).json({ msg: "Order not found" });
+    }
+
+    order.status = status;
+    await order.save();
+
+    res.json(order);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ msg: "Server Error" });
+  }
+});
+
+router.get("/orders", async (req, res) => {
+  try {
+    const orders = await Order.find(); 
+    console.log("it is orders ",orders)
+    res.status(200).json(orders);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ msg: "Server error" });
+  }
+});
+
+
 router.get("/:id", async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
@@ -195,23 +234,21 @@ router.delete("/:id", async (req, res) => {
 router.post("/register", async (req, res) => {
   const { name, email, password } = req.body;
 
-  // Basic validation
   if (!name || !email || !password) {
     return res.status(400).json({ msg: "Please enter all fields" });
   }
 
   try {
-    // Check if user already exists
+ 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ msg: "User already exists" });
     }
 
-    // Create user directly
     const user = await User.create({
       name,
       email,
-      password, // Stored in plain text
+      password, 
     });
 
     res.status(201).json(user);
@@ -220,5 +257,48 @@ router.post("/register", async (req, res) => {
     res.status(500).send("Server Error");
   }
 });
+
+
+router.post("/login", async (req, res) => {
+  const { email, password } = req.body;
+  console.log(email, " ",password)
+  if (!email || !password) {
+    return res.status(400).json({ msg: "Please enter all fields" });
+  }
+
+  try {
+    
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ msg: "User does not exist" });
+    }
+
+    if (user.password !== password) {
+      return res.status(400).json({ msg: "Invalid credentials" });
+    }
+
+    const token = jwt.sign(
+      { id: user._id, email: user.email, role: user.role || "user" },
+      "asdfasdfasdf1231234", 
+      { expiresIn: "7d" } 
+    );
+
+    res.json({
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role || "user",
+      },
+    });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server Error");
+  }
+});
+
+
+
 
 module.exports = router;

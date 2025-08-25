@@ -9,11 +9,25 @@ const RegisterPage = () => {
 
   const navigate = useNavigate();
 
-  const handleRegister = () => {
-  
-    
-  };
+ const handleRegister = (e) => {
+  e.preventDefault(); 
 
+  const name = e.target.elements.name.value;
+  const email = e.target.elements.email.value;
+  const password = e.target.elements.password.value;
+
+  fetch("http://localhost:5000/api/products/register", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, email, password }),
+  })
+    .then(res => res.json())
+    .then(data => {
+      console.log(data);
+      navigate("/login"); 
+    })
+    .catch(err => console.error(err));
+};
   return (
     <div className="container mx-auto px-4 py-8 flex justify-center items-center">
       <Card className="w-full max-w-md">
