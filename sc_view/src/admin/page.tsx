@@ -275,11 +275,6 @@ export default function AdminDashboard() {
             users={users}
             orders={orders}
             addOrder={addOrder}
-            filteredOrders={filteredOrders}
-            userById={userById}
-            productById={productById}
-            updateOrderStatus={updateOrderStatus}
-            ORDER_STATUSES={ORDER_STATUSES}
           />
         );
       case "products":

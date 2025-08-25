@@ -37,7 +37,7 @@ const App = () => (
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/profile" element={<ProfilePage />} />
              
-              <Route path="/cci" element={<AdminDashboard />} />
+              <Route path="/cci" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
         </CartProvider>
