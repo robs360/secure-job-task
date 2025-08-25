@@ -3,6 +3,7 @@ const router = express.Router();
 const multer = require("multer");
 const path = require("path");
 const Product = require("../models/product.model");
+const User = require("../models/user.model");
 const fs = require("fs"); // Import fs for file system operations
 
 // Multer config
@@ -179,6 +180,41 @@ router.delete("/:id", async (req, res) => {
     await Product.findByIdAndDelete(req.params.id);
 
     res.json({ msg: "Product removed" });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server Error");
+  }
+});
+
+
+
+
+// Authentication 
+
+
+router.post("/register", async (req, res) => {
+  const { name, email, password } = req.body;
+
+  // Basic validation
+  if (!name || !email || !password) {
+    return res.status(400).json({ msg: "Please enter all fields" });
+  }
+
+  try {
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ msg: "User already exists" });
+    }
+
+    // Create user directly
+    const user = await User.create({
+      name,
+      email,
+      password, // Stored in plain text
+    });
+
+    res.status(201).json(user);
   } catch (err) {
     console.error(err.message);
     res.status(500).send("Server Error");

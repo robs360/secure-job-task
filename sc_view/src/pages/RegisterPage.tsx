@@ -6,12 +6,12 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 
 const RegisterPage = () => {
-  const { login } = useAuth();
+
   const navigate = useNavigate();
 
   const handleRegister = () => {
-    login();
-    navigate("/profile");
+  
+    
   };
 
   return (

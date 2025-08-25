@@ -29,6 +29,7 @@ interface Product {
 
 const SingleProductPage = () => {
   const { id } = useParams<{ id: string }>();
+  console.log("it is id ",id)
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

@@ -1,102 +1,31 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Star, ShoppingCart, Eye, Filter, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
+import axios from "axios";
 
 
 const FeaturedProducts = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
-
-  // Mock product data
-  const products = [
-    {
-      id: 1,
-      name: "Hikvision WiFi Camera 2MP",
-      price: 8500,
-      originalPrice: 9500,
-      category: "cctv",
-      brand: "HIKVISION",
-      rating: 4.8,
-      reviews: 42,
-      image: "/api/placeholder/300/300",
-      features: ["2MP Resolution", "WiFi Connectivity", "Night Vision", "Mobile App"],
-      inStock: true,
-      isPopular: true
-    },
-    {
-      id: 2,
-      name: "TP-Link 4G Camera Pro",
-      price: 12000,
-      originalPrice: 13500,
-      category: "cctv",
-      brand: "TP-LINK",
-      rating: 4.6,
-      reviews: 28,
-      image: "/api/placeholder/300/300",
-      features: ["4G Connectivity", "Solar Power", "Weatherproof", "Cloud Storage"],
-      inStock: true,
-      isPopular: false
-    },
-    {
-      id: 3,
-      name: "Restaurant POS Software Pro",
-      price: 25000,
-      originalPrice: 30000,
-      category: "pos",
-      brand: "NEONECY",
-      rating: 4.9,
-      reviews: 67,
-      image: "/api/placeholder/300/300",
-      features: ["Multi-table Management", "Kitchen Display", "Inventory Control", "Reports"],
-      inStock: true,
-      isPopular: true
-    },
-    {
-      id: 4,
-      name: "Vehicle GPS Tracker Advanced",
-      price: 6500,
-      originalPrice: 7500,
-      category: "gps",
-      brand: "STAREX",
-      rating: 4.7,
-      reviews: 35,
-      image: "/api/placeholder/300/300",
-      features: ["Real-time Tracking", "Geofencing", "Speed Alerts", "Mobile App"],
-      inStock: true,
-      isPopular: false
-    },
-    {
-      id: 5,
-      name: "Pharmacy Management Software",
-      price: 18000,
-      originalPrice: 22000,
-      category: "pos",
-      brand: "NEONECY",
-      rating: 4.8,
-      reviews: 53,
-      image: "/api/placeholder/300/300",
-      features: ["Drug Database", "Prescription Management", "Billing System", "Stock Control"],
-      inStock: true,
-      isPopular: true
-    },
-    {
-      id: 6,
-      name: "IMOU IP Camera 4MP",
-      price: 11500,
-      originalPrice: 13000,
-      category: "cctv",
-      brand: "IMOU",
-      rating: 4.5,
-      reviews: 39,
-      image: "/api/placeholder/300/300",
-      features: ["4MP Ultra HD", "AI Detection", "Two-way Audio", "Cloud Recording"],
-      inStock: false,
-      isPopular: false
-    }
-  ];
-
+  const [products,setProducts]= useState([])
+  const [loading, setLoading] = useState(true);
+    useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const res = await axios.get("http://localhost:5000/api/products");
+        setProducts(res.data); 
+      } catch (err) {
+        
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProducts();
+  }, []);
   const categories = [
     { id: "all", name: "All Products", count: products.length },
     { id: "cctv", name: "CCTV", count: products.filter(p => p.category === "cctv").length },
@@ -107,7 +36,8 @@ const FeaturedProducts = () => {
   const filteredProducts = selectedCategory === "all" 
     ? products 
     : products.filter(product => product.category === selectedCategory);
-
+  
+    console.log("it is products ",products)
   return (
     <section className="py-16 bg-background">
       <div className="container mx-auto px-4">
@@ -146,7 +76,7 @@ const FeaturedProducts = () => {
               {/* Product Image */}
               <div className="relative h-64 overflow-hidden bg-muted">
                 <img
-                  src={product.image}
+                  src={`http://localhost:5000/uploads/${product.images[0]}`}
                   alt={product.name}
                   className="w-full h-full object-cover group-hover:scale-110 transition-smooth"
                 />
@@ -214,10 +144,10 @@ const FeaturedProducts = () => {
                 {/* Price */}
                 <div className="flex items-center gap-2 mb-4">
                   <span className="text-2xl font-bold text-primary">
-                    ৳{product.price.toLocaleString()}
+                    ৳{product.price}
                   </span>
                   <span className="text-sm text-muted-foreground line-through">
-                    ৳{product.originalPrice.toLocaleString()}
+                    ৳{product.originalPrice}
                   </span>
                   <Badge variant="destructive" className="text-xs">
                     {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
@@ -226,7 +156,7 @@ const FeaturedProducts = () => {
 
                 {/* Actions */}
                 <div className="flex gap-2">
-                  <Link to={`/products/${product.id}`} className="flex-1">
+                  <Link to={`/products/${product._id}`} className="flex-1">
                     <Button 
                       variant="outline" 
                       size="sm" 
